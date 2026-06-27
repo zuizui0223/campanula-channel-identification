@@ -22,9 +22,10 @@ rather than merely described as a difference in flower size, selfing, or visitor
 - provides a constrained life-history simulation layer for comparing explicitly declared mechanisms against predeclared observation intervals;
 - ranks proposed future measurements by how strongly they distinguish the parameter candidates still compatible with current observations;
 - provides a nectar-guide mechanism model that separates guide effects on visitation, legitimate handling/pollen placement, and guide-expression cost;
-- extends that model, in explicit layers, to paternal success, pollinator guilds, late inbreeding depression, temporal variation, genetic-versus-plastic expression, and spatial recruitment.
+- extends that model, in explicit layers, to paternal success, pollinator guilds, late inbreeding depression, temporal variation, genetic-versus-plastic expression, and spatial recruitment;
+- turns those layers into restricted competing scenarios and tests whether a planned observation set can recover a known virtual mechanism.
 
-The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty explicit. The measurement-ranking layer identifies which proposed observable would split that remaining set most strongly at a predeclared assay resolution. The guide-evolution layers specify which intermediate observation is needed before a proposed evolutionary mechanism can be used in a field-facing claim. See [the simulation specification](docs/constrained_life_history_simulation.md), [the measurement-ranking specification](docs/discriminating_measurements.md), [the nectar-guide mechanism model](docs/nectar_guide_mechanism_model.md), and [the full six-layer guide-evolution model](docs/guide_evolution_model.md).
+The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty explicit. The measurement-ranking layer identifies which proposed observable would split that remaining set most strongly at a predeclared assay resolution. The guide-evolution layers specify which intermediate observation is needed before a proposed evolutionary mechanism can be used in a field-facing claim. The scenario-recovery layer asks whether those observations actually discriminate competing mechanisms before field data are collected. See [the simulation specification](docs/constrained_life_history_simulation.md), [the measurement-ranking specification](docs/discriminating_measurements.md), [the nectar-guide mechanism model](docs/nectar_guide_mechanism_model.md), [the full six-layer guide-evolution model](docs/guide_evolution_model.md), and [the scenario recovery workflow](docs/guide_scenario_recovery.md).
 
 ## Guide-evolution layers
 
@@ -38,6 +39,20 @@ The simulation layer does not estimate an unobserved cost from a trait alone. It
 ```
 
 These layers are deliberately modular. Do not activate a layer merely because it exists: activate it only when its required intermediate quantity is measured or has a defensible calibration.
+
+## Competing scenario workflow
+
+```text
+M0 null guide
+M1 guide → visits
+M2 guide → handling / pollen placement
+M3 guide → paternal export and siring
+M4 assurance compensation
+M5 spatial establishment
+M6 mixed
+```
+
+A coarse terminal outcome such as recruit number should generally leave several scenarios compatible. The model becomes useful when intermediate measurements—guild-resolved visits, contact/pollen deposition, cross type, paternity, or patch recruitment—reduce that compatible set.
 
 ## What it does not claim
 
