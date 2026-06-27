@@ -1,6 +1,16 @@
 """Tools for declared Campanula channel-identification studies."""
 
 from .discrimination import MeasurementOption, MeasurementRanking, rank_measurements
+from .guide_design_power import (
+    DesignPowerResult,
+    MeasurementDesign,
+    MeasurementPlan,
+    MeasurementPlanRanking,
+    ScenarioSurvivalRate,
+    evaluate_measurement_plan,
+    rank_measurement_plans,
+    sweep_common_sample_sizes,
+)
 from .guide_inbreeding import PostSeedResult, PostSeedSurvival, apply_post_seed_survival
 from .guide_multiguild import MultiguildGuideResult, PollinatorGuild, simulate_multiguild_guide_response
 from .guide_paternal import PaternalGuideParameters, PaternalGuideResult, simulate_guide_paternal_fitness
@@ -64,4 +74,5 @@ __all__ = [
     "GuideReactionNorm", "FamilyGuideObservation",
     "Patch", "SpatialRecruitmentResult", "distribute_seeds_to_patches",
     "GuideScenario", "ScenarioCompatibility", "ScenarioMetric", "ScenarioObservation", "ScenarioResult", "ScenarioSettings", "ScenarioYear", "ScenarioYearResult", "assess_scenario_compatibility", "recover_compatible_scenarios", "simulate_guide_scenario",
+    "MeasurementDesign", "MeasurementPlan", "ScenarioSurvivalRate", "DesignPowerResult", "MeasurementPlanRanking", "evaluate_measurement_plan", "rank_measurement_plans", "sweep_common_sample_sizes",
 ]
