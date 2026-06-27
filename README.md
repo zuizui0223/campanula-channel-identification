@@ -23,9 +23,10 @@ rather than merely described as a difference in flower size, selfing, or visitor
 - ranks proposed future measurements by how strongly they distinguish the parameter candidates still compatible with current observations;
 - provides a nectar-guide mechanism model that separates guide effects on visitation, legitimate handling/pollen placement, and guide-expression cost;
 - extends that model, in explicit layers, to paternal success, pollinator guilds, late inbreeding depression, temporal variation, genetic-versus-plastic expression, and spatial recruitment;
-- turns those layers into restricted competing scenarios and tests whether a planned observation set can recover a known virtual mechanism.
+- turns those layers into restricted competing scenarios and tests whether a planned observation set can recover a known virtual mechanism;
+- simulates whether candidate measurement plans, their effective sample sizes, and their declared observation variation can actually discriminate those scenarios.
 
-The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty explicit. The measurement-ranking layer identifies which proposed observable would split that remaining set most strongly at a predeclared assay resolution. The guide-evolution layers specify which intermediate observation is needed before a proposed evolutionary mechanism can be used in a field-facing claim. The scenario-recovery layer asks whether those observations actually discriminate competing mechanisms before field data are collected. See [the simulation specification](docs/constrained_life_history_simulation.md), [the measurement-ranking specification](docs/discriminating_measurements.md), [the nectar-guide mechanism model](docs/nectar_guide_mechanism_model.md), [the full six-layer guide-evolution model](docs/guide_evolution_model.md), and [the scenario recovery workflow](docs/guide_scenario_recovery.md).
+The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty explicit. The measurement-ranking layer identifies which proposed observable would split that remaining set most strongly at a predeclared assay resolution. The guide-evolution layers specify which intermediate observation is needed before a proposed evolutionary mechanism can be used in a field-facing claim. The scenario-recovery layer asks whether those observations actually discriminate competing mechanisms before field data are collected. The design-power layer asks how that discrimination changes as effective sample size and total measurement variation change. See [the simulation specification](docs/constrained_life_history_simulation.md), [the measurement-ranking specification](docs/discriminating_measurements.md), [the nectar-guide mechanism model](docs/nectar_guide_mechanism_model.md), [the full six-layer guide-evolution model](docs/guide_evolution_model.md), [the scenario recovery workflow](docs/guide_scenario_recovery.md), and [the design-power workflow](docs/guide_design_power.md).
 
 ## Guide-evolution layers
 
@@ -53,6 +54,19 @@ M6 mixed
 ```
 
 A coarse terminal outcome such as recruit number should generally leave several scenarios compatible. The model becomes useful when intermediate measurements—guild-resolved visits, contact/pollen deposition, cross type, paternity, or patch recruitment—reduce that compatible set.
+
+## Design-power workflow
+
+For a virtual truth and declared alternatives, a measurement plan now reports:
+
+```text
+truth retention rate
+unique true-scenario recovery rate
+mean compatible scenarios
+false-scenario survival rate
+```
+
+The current error model uses the effective independent sample size and total individual-level SD on each measured scale. It is a planning approximation, not a replacement for a count, binomial, or hierarchical observation model when those are required by the data.
 
 ## What it does not claim
 
