@@ -1,5 +1,10 @@
 """Tools for declared Campanula channel-identification studies."""
 
+from .discrimination import (
+    MeasurementOption,
+    MeasurementRanking,
+    rank_measurements,
+)
 from .life_history import (
     CompatibilityResult,
     LifeHistoryParameters,
@@ -28,6 +33,9 @@ __all__ = [
     "ChannelReadinessReport",
     "PollinatorComponentStatus",
     "assess_channel_readiness",
+    "MeasurementOption",
+    "MeasurementRanking",
+    "rank_measurements",
     "CompatibilityResult",
     "LifeHistoryParameters",
     "LifeHistoryResult",

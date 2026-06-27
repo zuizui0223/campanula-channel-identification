@@ -19,15 +19,18 @@ rather than merely described as a difference in flower size, selfing, or visitor
 - distinguishes direct measurements from proxies whose calibration must be stable or independently checked;
 - keeps published patterns, prospective field measurements, and pollinator-specific claims separate;
 - provides a lightweight readiness checker for a proposed sampling design;
-- provides a constrained life-history simulation layer for comparing explicitly declared mechanisms against predeclared observation intervals.
+- provides a constrained life-history simulation layer for comparing explicitly declared mechanisms against predeclared observation intervals;
+- ranks proposed future measurements by how strongly they distinguish the parameter candidates still compatible with current observations.
 
-The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty and the next discriminating measurement explicit. See [the simulation specification](docs/constrained_life_history_simulation.md).
+The simulation layer does not estimate an unobserved cost from a trait alone. It retains the **set of parameter values compatible with all declared observations**, then makes the remaining uncertainty explicit. The measurement-ranking layer identifies which proposed observable would split that remaining set most strongly at a predeclared assay resolution. See [the simulation specification](docs/constrained_life_history_simulation.md) and [the measurement-ranking specification](docs/discriminating_measurements.md).
 
 ## What it does not claim
 
 A visit count is not automatically a measurement of local reproduction. Likewise, flower-size means, selfing rates, and pollinator turnover alone do not identify \(F\) versus \(E\).
 
 A successful simulated reconstruction is not proof that its mechanism generated the field pattern. It is only a compatibility result conditional on a declared life cycle, parameter ranges, and measurement intervals.
+
+A high-ranked measurement is not automatically the best field protocol: its feasibility, sampling variance, biological relevance, and cost still require an explicit field-design check.
 
 The factorisation is a declared model choice. It does not claim that all natural processes are multiplicative or independent.
 
