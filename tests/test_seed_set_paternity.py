@@ -3,6 +3,7 @@ from random import Random
 from channel_id.guide_inbreeding import PostSeedSurvival
 from channel_id.guide_paternal import PaternalGuideParameters
 from channel_id.guide_scenarios import GuideRoutes, GuideScenario, ScenarioSettings, ScenarioYear
+from channel_id.joint_seed_fates import SeedFateCounts
 from channel_id.nectar_guide import NectarGuideParameters, NectarGuideTrait
 from channel_id.seed_set_paternity import (
     PaternityCalls,
@@ -34,6 +35,17 @@ def settings() -> ScenarioSettings:
         post_seed_survival=PostSeedSurvival(0.4, 0.5),
         years=(ScenarioYear("typical", 0.7),),
     )
+
+
+def test_seed_fate_counts_accept_a_valid_partition() -> None:
+    counts = SeedFateCounts(
+        outcross_viable=1,
+        selfed_viable=2,
+        other=7,
+        total_ovules=10,
+    )
+
+    assert counts.outcross_viable + counts.selfed_viable + counts.other == counts.total_ovules
 
 
 def test_seed_set_paternity_observation_preserves_sampling_accounting() -> None:
