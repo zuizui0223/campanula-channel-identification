@@ -16,16 +16,20 @@ from .guide_multiguild import MultiguildGuideResult, PollinatorGuild, simulate_m
 from .guide_paternal import PaternalGuideParameters, PaternalGuideResult, simulate_guide_paternal_fitness
 from .guide_phenotype import FamilyGuideObservation, GuideReactionNorm
 from .guide_scenarios import (
+    GuideRoutes,
     GuideScenario,
     ScenarioCompatibility,
     ScenarioMetric,
     ScenarioObservation,
     ScenarioResult,
     ScenarioSettings,
+    ScenarioSpec,
     ScenarioYear,
     ScenarioYearResult,
     assess_scenario_compatibility,
+    core_maternal_scenarios,
     recover_compatible_scenarios,
+    routes_for,
     simulate_guide_scenario,
 )
 from .guide_spatial import Patch, SpatialRecruitmentResult, distribute_seeds_to_patches
@@ -73,6 +77,6 @@ __all__ = [
     "YearPerformance", "TemporalFitnessSummary", "summarise_temporal_fitness",
     "GuideReactionNorm", "FamilyGuideObservation",
     "Patch", "SpatialRecruitmentResult", "distribute_seeds_to_patches",
-    "GuideScenario", "ScenarioCompatibility", "ScenarioMetric", "ScenarioObservation", "ScenarioResult", "ScenarioSettings", "ScenarioYear", "ScenarioYearResult", "assess_scenario_compatibility", "recover_compatible_scenarios", "simulate_guide_scenario",
+    "GuideScenario", "GuideRoutes", "ScenarioSpec", "routes_for", "core_maternal_scenarios", "ScenarioCompatibility", "ScenarioMetric", "ScenarioObservation", "ScenarioResult", "ScenarioSettings", "ScenarioYear", "ScenarioYearResult", "assess_scenario_compatibility", "recover_compatible_scenarios", "simulate_guide_scenario",
     "MeasurementDesign", "MeasurementPlan", "ScenarioSurvivalRate", "DesignPowerResult", "MeasurementPlanRanking", "evaluate_measurement_plan", "rank_measurement_plans", "sweep_common_sample_sizes",
 ]

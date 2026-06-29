@@ -133,6 +133,9 @@ def core_maternal_scenarios() -> tuple[ScenarioSpec, ...]:
 
 class ScenarioMetric(str, Enum):
     EXPECTED_VISITS = "expected_visits"
+    LEGITIMATE_CONTACT_FRACTION = "legitimate_contact_fraction"
+    EXPECTED_LEGITIMATE_CONTACTS = "expected_legitimate_contacts"
+    STIGMA_POLLEN_DEPOSITION = "stigma_pollen_deposition"
     OUTCROSS_VIABLE_SEEDS = "outcross_viable_seeds"
     SELFED_VIABLE_SEEDS = "selfed_viable_seeds"
     FEMALE_RECRUITS = "female_recruits"
@@ -178,8 +181,18 @@ class ScenarioSettings:
 
 @dataclass(frozen=True)
 class ScenarioYearResult:
+    """Scenario quantities for one year and one maternal-flower scale.
+
+    ``stigma_pollen_deposition`` is a model-scale effective deposition pressure;
+    it is not automatically equivalent to a raw count of pollen grains in field
+    assays.
+    """
+
     label: str
     expected_visits: float
+    legitimate_contact_fraction: float
+    expected_legitimate_contacts: float
+    stigma_pollen_deposition: float
     outcross_viable_seeds: float
     selfed_viable_seeds: float
     female_recruits: float
@@ -312,6 +325,9 @@ def simulate_guide_scenario(scenario: ScenarioSpec, settings: ScenarioSettings) 
         by_year[year.label] = ScenarioYearResult(
             year.label,
             maternal.expected_visits,
+            maternal.legitimate_contact_fraction,
+            maternal.expected_legitimate_contacts,
+            maternal.stigma_pollen_deposition,
             maternal.outcross_viable_seeds,
             maternal.selfed_viable_seeds,
             female,

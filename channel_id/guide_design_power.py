@@ -18,11 +18,11 @@ from random import Random
 from typing import Sequence
 
 from .guide_scenarios import (
-    GuideScenario,
     ScenarioMetric,
     ScenarioObservation,
     ScenarioResult,
     ScenarioSettings,
+    ScenarioSpec,
     simulate_guide_scenario,
 )
 
@@ -40,7 +40,9 @@ class MeasurementDesign:
     A virtual observed mean is drawn from a normal approximation with
     ``SE = SD / sqrt(n)``. The compatibility interval is then the observed
     mean plus/minus ``interval_multiplier * SE``, clipped at zero because all
-    currently supported scenario metrics are non-negative.
+    currently supported scenario metrics are non-negative. This convenience
+    approximation is not a replacement for a binomial contact model, a pollen
+    count model, or a hierarchical video-analysis model in field-facing work.
     """
 
     metric: ScenarioMetric
@@ -110,7 +112,7 @@ class MeasurementPlan:
 class ScenarioSurvivalRate:
     """Fraction of virtual datasets for which a scenario remains compatible."""
 
-    scenario: GuideScenario
+    scenario: ScenarioSpec
     survival_rate: float
 
 
@@ -119,7 +121,7 @@ class DesignPowerResult:
     """Recovery properties of one virtual measurement plan."""
 
     plan_name: str
-    truth_scenario: GuideScenario
+    truth_scenario: ScenarioSpec
     replicates: int
     truth_retention_rate: float
     unique_truth_recovery_rate: float
@@ -139,9 +141,9 @@ class MeasurementPlanRanking:
 
 
 def _validate_scenarios(
-    truth_scenario: GuideScenario,
-    candidate_scenarios: Sequence[GuideScenario],
-) -> tuple[GuideScenario, ...]:
+    truth_scenario: ScenarioSpec,
+    candidate_scenarios: Sequence[ScenarioSpec],
+) -> tuple[ScenarioSpec, ...]:
     candidates = tuple(candidate_scenarios)
     if not candidates:
         raise ValueError("at least one candidate scenario is required")
@@ -160,8 +162,8 @@ def _is_compatible(result: ScenarioResult, observations: Sequence[ScenarioObserv
 
 
 def evaluate_measurement_plan(
-    truth_scenario: GuideScenario,
-    candidate_scenarios: Sequence[GuideScenario],
+    truth_scenario: ScenarioSpec,
+    candidate_scenarios: Sequence[ScenarioSpec],
     settings: ScenarioSettings,
     plan: MeasurementPlan,
     *,
@@ -209,7 +211,7 @@ def evaluate_measurement_plan(
             retained_truth += 1
         if compatible == (truth_scenario,):
             unique_truth += 1
-        false_survivors += sum(scenario is not truth_scenario for scenario in compatible)
+        false_survivors += sum(scenario != truth_scenario for scenario in compatible)
         for scenario in compatible:
             survivor_counts[scenario] += 1
 
@@ -232,8 +234,8 @@ def evaluate_measurement_plan(
 
 
 def rank_measurement_plans(
-    truth_scenario: GuideScenario,
-    candidate_scenarios: Sequence[GuideScenario],
+    truth_scenario: ScenarioSpec,
+    candidate_scenarios: Sequence[ScenarioSpec],
     settings: ScenarioSettings,
     plans: Sequence[MeasurementPlan],
     *,
@@ -285,8 +287,8 @@ def sweep_common_sample_sizes(
     """Create plans that apply one effective sample size to every measurement.
 
     This is convenient for early field planning. Use manually constructed
-    plans when visits, pollen deposition, and seed-set components will have
-    different effective sample sizes.
+    plans when visits, contact fractions, pollen deposition, and seed-set
+    components will have different effective sample sizes.
     """
 
     if not sample_sizes:
