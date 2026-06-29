@@ -96,11 +96,20 @@ class NectarGuideParameters:
 
 @dataclass(frozen=True)
 class NectarGuideResult:
-    """Expected observables and life-history quantities per maternal flower."""
+    """Expected observables and life-history quantities per maternal flower.
+
+    ``expected_legitimate_contacts`` is the expected number of visits making a
+    legitimate contact. ``stigma_pollen_deposition`` is an *effective deposition
+    pressure* on the model's conversion scale, not a claim that this numerical
+    value is a raw pollen-grain count. Field data must map observed contact or
+    pollen counts to this scale with an assay-specific observation model.
+    """
 
     remaining_seed_budget: float
     expected_visits: float
     legitimate_contact_fraction: float
+    expected_legitimate_contacts: float
+    stigma_pollen_deposition: float
     outcross_fraction: float
     outcross_viable_seeds: float
     selfed_viable_seeds: float
@@ -166,11 +175,11 @@ def simulate_nectar_guide_life_history(
         parameters.baseline_legitimate_fraction
         + parameters.guide_handling_gain * trait.guide_contrast,
     )
-    outcross_fraction = 1.0 - exp(
-        -expected_visits
-        * legitimate_contact_fraction
-        * parameters.pollen_to_outcross_fraction
+    expected_legitimate_contacts = expected_visits * legitimate_contact_fraction
+    stigma_pollen_deposition = (
+        expected_legitimate_contacts * parameters.pollen_to_outcross_fraction
     )
+    outcross_fraction = 1.0 - exp(-stigma_pollen_deposition)
     outcross_viable_seeds = remaining_budget * outcross_fraction
     selfed_viable_seeds = (
         remaining_budget
@@ -188,6 +197,8 @@ def simulate_nectar_guide_life_history(
         remaining_seed_budget=remaining_budget,
         expected_visits=expected_visits,
         legitimate_contact_fraction=legitimate_contact_fraction,
+        expected_legitimate_contacts=expected_legitimate_contacts,
+        stigma_pollen_deposition=stigma_pollen_deposition,
         outcross_fraction=outcross_fraction,
         outcross_viable_seeds=outcross_viable_seeds,
         selfed_viable_seeds=selfed_viable_seeds,
