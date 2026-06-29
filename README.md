@@ -85,3 +85,9 @@ The factorisation is a declared model choice. It does not claim that all natural
 This is the active empirical design home for the Campanula/Izu channel-identification program extracted from `microdonta`.
 
 The model architecture can now represent the major routes by which nectar-guide variation could affect long-term genetic contribution. It does **not** make those routes identifiable without data: every guide-evolution claim still requires a declared life cycle, a common census scale, measured intermediates, and a competing-model comparison.
+
+## Relationship to RACH causal invariants
+
+[`rach-causal-invariants`](https://github.com/zuizui0223/rach-causal-invariants) is the separate general-methods repository. It provides finite qualitative-program grammars, robust-admissibility classifications, coverage labels, and exact known-truth observation-channel calibration. It does not specify floral fitness, island geography, pollinator guilds, pollen deposition, recruitment, or any Campanula parameter.
+
+This repository owns those biological assumptions: the \(F(z)E(z)\) factorisation, the nectar-guide life cycle, scenario parameters, observation units, and field protocol. A small predeclared subset of Campanula scenarios may be translated into a RACH candidate universe to audit the logical consequences of a qualitative observation design. That translation is an audit layer, not a code dependency and not empirical validation of a Campanula mechanism.
