@@ -184,6 +184,6 @@ def test_contact_or_deposition_breaks_visit_handling_ambiguity_in_virtual_data()
 def test_scenario_results_expose_contact_and_deposition_metrics() -> None:
     result = simulate_guide_scenario(TRUTH, settings())
 
-    assert result.metric(ScenarioMetric.LEGITIMATE_CONTACT_FRACTION, "typical") == 0.52
+    assert isclose(result.metric(ScenarioMetric.LEGITIMATE_CONTACT_FRACTION, "typical"), 0.52)
     assert result.metric(ScenarioMetric.EXPECTED_LEGITIMATE_CONTACTS, "typical") > 0.0
     assert result.metric(ScenarioMetric.STIGMA_POLLEN_DEPOSITION, "typical") > 0.0
