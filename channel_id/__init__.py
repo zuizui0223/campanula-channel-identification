@@ -34,6 +34,16 @@ from .guide_scenarios import (
 )
 from .guide_spatial import Patch, SpatialRecruitmentResult, distribute_seeds_to_patches
 from .guide_temporal import TemporalFitnessSummary, YearPerformance, summarise_temporal_fitness
+from .joint_seed_fates import (
+    JointSeedFateRecoverySummary,
+    SeedFateCounts,
+    SeedFateObservationDesign,
+    benchmark_joint_seed_fate_recovery,
+    joint_seed_fate_observations,
+    sample_seed_fates,
+    seed_fate_probabilities,
+    wilson_interval,
+)
 from .life_history import (
     CompatibilityResult,
     LifeHistoryParameters,
@@ -65,6 +75,15 @@ from .readiness import (
     PollinatorComponentStatus,
     assess_channel_readiness,
 )
+from .seed_set_paternity import (
+    PaternityCalls,
+    SeedSetPaternityDesign,
+    SeedSetPaternityObservation,
+    SeedSetPaternityRecoverySummary,
+    benchmark_seed_set_paternity_recovery,
+    corrected_outcross_fraction_interval,
+    simulate_seed_set_paternity_observation,
+)
 
 __all__ = [
     "ChannelDesign", "ChannelReadiness", "ChannelReadinessReport", "PollinatorComponentStatus", "assess_channel_readiness",
@@ -79,4 +98,6 @@ __all__ = [
     "Patch", "SpatialRecruitmentResult", "distribute_seeds_to_patches",
     "GuideScenario", "GuideRoutes", "ScenarioSpec", "routes_for", "core_maternal_scenarios", "ScenarioCompatibility", "ScenarioMetric", "ScenarioObservation", "ScenarioResult", "ScenarioSettings", "ScenarioYear", "ScenarioYearResult", "assess_scenario_compatibility", "recover_compatible_scenarios", "simulate_guide_scenario",
     "MeasurementDesign", "MeasurementPlan", "ScenarioSurvivalRate", "DesignPowerResult", "MeasurementPlanRanking", "evaluate_measurement_plan", "rank_measurement_plans", "sweep_common_sample_sizes",
+    "SeedFateObservationDesign", "SeedFateCounts", "JointSeedFateRecoverySummary", "seed_fate_probabilities", "sample_seed_fates", "wilson_interval", "joint_seed_fate_observations", "benchmark_joint_seed_fate_recovery",
+    "SeedSetPaternityDesign", "PaternityCalls", "SeedSetPaternityObservation", "SeedSetPaternityRecoverySummary", "corrected_outcross_fraction_interval", "simulate_seed_set_paternity_observation", "benchmark_seed_set_paternity_recovery",
 ]
