@@ -1,5 +1,15 @@
 """Tools for declared Campanula channel-identification studies."""
 
+from .camera_visit_handling import (
+    CameraVisitHandlingCounts,
+    CameraVisitHandlingDesign,
+    CameraVisitHandlingObservation,
+    CameraVisitHandlingRecoverySummary,
+    benchmark_camera_visit_handling_recovery,
+    corrected_legitimate_fraction_interval,
+    poisson_mean_interval,
+    simulate_camera_visit_handling_observation,
+)
 from .discrimination import MeasurementOption, MeasurementRanking, rank_measurements
 from .guide_design_power import (
     DesignPowerResult,
@@ -100,4 +110,5 @@ __all__ = [
     "MeasurementDesign", "MeasurementPlan", "ScenarioSurvivalRate", "DesignPowerResult", "MeasurementPlanRanking", "evaluate_measurement_plan", "rank_measurement_plans", "sweep_common_sample_sizes",
     "SeedFateObservationDesign", "SeedFateCounts", "JointSeedFateRecoverySummary", "seed_fate_probabilities", "sample_seed_fates", "wilson_interval", "joint_seed_fate_observations", "benchmark_joint_seed_fate_recovery",
     "SeedSetPaternityDesign", "PaternityCalls", "SeedSetPaternityObservation", "SeedSetPaternityRecoverySummary", "corrected_outcross_fraction_interval", "simulate_seed_set_paternity_observation", "benchmark_seed_set_paternity_recovery",
+    "CameraVisitHandlingDesign", "CameraVisitHandlingCounts", "CameraVisitHandlingObservation", "CameraVisitHandlingRecoverySummary", "poisson_mean_interval", "corrected_legitimate_fraction_interval", "simulate_camera_visit_handling_observation", "benchmark_camera_visit_handling_recovery",
 ]
