@@ -1,0 +1,33 @@
+name: Virtual Izu Baseline
+
+on:
+  pull_request:
+    paths:
+      - 'channel_id/**'
+      - 'scripts/generate_izu_sensitivity_baseline.py'
+      - '.github/workflows/izu-virtual-baseline.yml'
+  workflow_dispatch:
+
+jobs:
+  virtual-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[dev]'
+      - name: Generate fixed-seed virtual sensitivity baseline
+        run: |
+          python scripts/generate_izu_sensitivity_baseline.py \
+            --replicates 50 \
+            --output artifacts/izu_virtual_sensitivity_baseline.md
+          cat artifacts/izu_virtual_sensitivity_baseline.md
+      - name: Upload virtual baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: izu-virtual-sensitivity-baseline
+          path: artifacts/izu_virtual_sensitivity_baseline.md
+          if-no-files-found: error
+          retention-days: 14
