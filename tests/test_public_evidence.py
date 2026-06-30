@@ -1,3 +1,5 @@
+import pytest
+
 from channel_id.public_evidence import (
     IslandBuffer,
     OccurrenceRecord,
@@ -79,7 +81,7 @@ def test_photo_summary_requires_independent_annotation_for_agreement() -> None:
 
     assert not single[0].agreement_ready
     assert paired[0].agreement_ready
-    assert paired[0].image_weighted_spot_fraction == 0.4
+    assert paired[0].image_weighted_spot_fraction == pytest.approx(0.4)
 
 
 def test_unassessable_spots_stay_missing() -> None:
