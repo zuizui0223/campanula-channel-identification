@@ -1,7 +1,7 @@
 """Stress-test finite Izu camera calibration against biased clip selection.
 
 The report compares nominal fixed detection, unbiased finite calibration, and
-finite calibration whose analysis estimate is deliberately biased.  It remains
+finite calibration whose analysis estimate is deliberately biased. It remains
 synthetic and uses an optimistic independent reference stream.
 """
 
@@ -99,7 +99,8 @@ def render_calibration_bias_report(replicates: int) -> str:
         f"- Replicates per world × plan × stress × bias: `{replicates}`",
         f"- Reference visits: `{REFERENCE_VISITS_PER_SITE}` per virtual site-condition.",
         "- `easy_clip_bias`: calibration detection is too optimistic by +0.80 on the logit scale.",
-        "- `stratum_mismatch`: independent site-condition mismatch SD = 0.70 on the logit scale.",
+        "- `south_optimistic_gradient` / `south_pessimistic_gradient`: calibration bias changes by ±2.00 from north to south on the logit scale.",
+        "- `easy_clip_plus_gradient_mismatch`: global optimistic bias, southward gradient bias, and residual site mismatch together.",
         "",
         "| world | candidate classes | plan | field stress | calibration assumption | nominal unique top | unbiased unique top | biased unique top | Δ biased vs unbiased | nominal mean rank | unbiased mean rank | biased mean rank |",
         "|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
@@ -161,7 +162,7 @@ def render_calibration_bias_report(replicates: int) -> str:
             "",
             "## Interpretation boundary",
             "",
-            "The unbiased column remains optimistic because reference visits are treated as known opportunities. The biased columns do not estimate a particular real bias. They ask whether preserving the calibration count alone is enough when clips are easier than ordinary footage or do not match the wind/light stratum. A loss of biased recovery means clip selection method and condition matching must be retained and modeled, not merely that more clips are needed.",
+            "The unbiased column remains optimistic because reference visits are treated as known opportunities. The biased columns do not estimate a particular real bias. They ask whether preserving the calibration count alone is enough when clips are easier than ordinary footage or do not match the wind/light stratum. A loss of biased recovery means clip selection method and condition matching must be retained and modeled, not merely that more clips are needed. The north-to-south gradient cases specifically test whether calibration error can mimic or erase the same ordinal gradient used by the virtual guide-contrast mechanism.",
         )
     )
     return "\n".join(lines) + "\n"
