@@ -23,6 +23,9 @@ def test_virtual_baseline_generator_writes_markdown(tmp_path: Path) -> None:
     rendered = output.read_text(encoding="utf-8")
     assert "# Virtual Izu sensitivity baseline" in rendered
     assert "Replicates per plan × world × analysis mode: `1`" in rendered
+    assert "## Interval-compatibility results" in rendered
+    assert "## Pooled-likelihood ranking results (calibrated environment)" in rendered
+    assert "mean truth log-likelihood gap" in rendered
     assert "null_environment_gradient" in rendered
     assert "visit_assurance_environment_gradient" in rendered
     assert "camera_heavy" in rendered
