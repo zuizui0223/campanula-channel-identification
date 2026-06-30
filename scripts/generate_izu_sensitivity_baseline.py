@@ -15,6 +15,11 @@ from channel_id.guide_inbreeding import PostSeedSurvival
 from channel_id.guide_paternal import PaternalGuideParameters
 from channel_id.guide_scenarios import ScenarioSettings, ScenarioYear
 from channel_id.izu_gradient_benchmark import GradientAnalysisMode, IzuGradientLandscape
+from channel_id.izu_observational_equivalence import (
+    observational_equivalence_groups,
+    observationally_distinct_candidates,
+    scenario_label,
+)
 from channel_id.izu_pooled_evidence import benchmark_izu_pooled_evidence_recovery
 from channel_id.izu_sensitivity_report import (
     IzuObservationPlan,
@@ -79,23 +84,62 @@ def baseline_plans() -> tuple[IzuObservationPlan, ...]:
     )
 
 
+def equivalence_groups_as_markdown(
+    worlds: tuple[IzuVirtualWorld, ...],
+    settings: ScenarioSettings,
+) -> str:
+    """Render conditional candidate aliases under the current baseline settings."""
+
+    lines = []
+    for world in worlds:
+        groups = observational_equivalence_groups(
+            world.candidates,
+            settings,
+            world.landscape,
+            analysis_mode=GradientAnalysisMode.CALIBRATED,
+        )
+        aliases = [group for group in groups if len(group) > 1]
+        rendered_aliases = "; ".join(
+            " = ".join(f"`{scenario_label(candidate)}`" for candidate in group)
+            for group in aliases
+        )
+        if not rendered_aliases:
+            rendered_aliases = "none"
+        lines.append(
+            f"- `{world.label}`: {len(groups)} observational classes from "
+            f"{len(world.candidates)} declared candidates; aliases: {rendered_aliases}."
+        )
+    return "\n".join(lines)
+
+
 def pooled_evidence_as_markdown_table(
     worlds: tuple[IzuVirtualWorld, ...],
     plans: tuple[IzuObservationPlan, ...],
     settings: ScenarioSettings,
     replicates: int,
 ) -> str:
-    """Render calibrated pooled-ranking recovery for the baseline assumptions."""
+    """Render calibrated pooled-ranking recovery for distinct baseline classes."""
 
-    header = "| world | plan | top-rank truth | unique truth top | mean truth rank | mean truth log-likelihood gap | no finite candidate |"
-    rule = "|---|---|---:|---:|---:|---:|---:|"
+    header = "| world | candidate classes | plan | top-rank truth | unique truth top | mean truth rank | mean truth log-likelihood gap | no finite candidate |"
+    rule = "|---|---:|---|---:|---:|---:|---:|---:|"
     rows = []
     stream = BASELINE_SEED
     for world in worlds:
+        candidates = observationally_distinct_candidates(
+            world.candidates,
+            settings,
+            world.landscape,
+            analysis_mode=GradientAnalysisMode.CALIBRATED,
+        )
+        if world.truth not in candidates:
+            raise ValueError(
+                "baseline truth is structurally equivalent to an earlier candidate; "
+                "declare the intended representative first"
+            )
         for plan in plans:
             summary = benchmark_izu_pooled_evidence_recovery(
                 truth=world.truth,
-                candidates=world.candidates,
+                candidates=candidates,
                 template_settings=settings,
                 landscape=world.landscape,
                 camera_design=plan.camera_design(),
@@ -109,6 +153,7 @@ def pooled_evidence_as_markdown_table(
                 + " | ".join(
                     (
                         world.label,
+                        str(len(candidates)),
                         plan.label,
                         f"{summary.truth_top_rank_rate:.2f}",
                         f"{summary.unique_truth_top_rate:.2f}",
@@ -158,10 +203,18 @@ def render_baseline(replicates: int) -> str:
         "",
         report_as_markdown_table(report),
         "",
+        "## Structural candidate equivalence (calibrated environment)",
+        "",
+        "Route labels are collapsed only when their declared observed predictions are "
+        "identical under the current settings. This is conditional equivalence, not a "
+        "claim that the biological mechanisms are generally identical.",
+        "",
+        equivalence_groups_as_markdown(worlds, settings),
+        "",
         "## Pooled-likelihood ranking results (calibrated environment)",
         "",
-        "The table ranks candidates from raw virtual counts pooled over sites. "
-        "It is a comparative likelihood score, not posterior support. "
+        "The table ranks structurally distinct candidates from raw virtual counts pooled "
+        "over sites. It is a comparative likelihood score, not posterior support. "
         "`mean truth log-likelihood gap` is truth minus the best non-truth candidate.",
         "",
         pooled_evidence_as_markdown_table(worlds, plans, settings, replicates),
@@ -187,7 +240,7 @@ def render_baseline(replicates: int) -> str:
             "`flat_environment` rows deliberately ignore the declared pollinator-service "
             "and establishment gradient. They diagnose confounding risk and never decide "
             "whether a plan passes. The pooled table uses only the calibrated environment "
-            "because it asks whether the declared count model can recover a route after "
+            "because it asks whether the declared joint count model can recover a route after "
             "combining islands. The four plans differ in more than one operational axis and "
             "are illustrative sensitivity probes, not an optimized field grid.",
         )
