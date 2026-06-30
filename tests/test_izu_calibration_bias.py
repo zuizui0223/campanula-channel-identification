@@ -1,3 +1,5 @@
+from random import Random
+
 import pytest
 
 from channel_id.camera_visit_handling import CameraVisitHandlingDesign
@@ -19,7 +21,6 @@ from channel_id.izu_field_misspecification import IzuFieldDistortion
 from channel_id.izu_gradient_benchmark import IzuGradientLandscape, IzuGradientSite
 from channel_id.nectar_guide import NectarGuideParameters, NectarGuideTrait
 from channel_id.seed_set_paternity import SeedSetPaternityDesign
-from random import Random
 
 
 def settings() -> ScenarioSettings:
@@ -76,12 +77,13 @@ def candidates():
     return (GuideScenario.NULL, GuideScenario.VISIT_ATTRACTION, GuideScenario.HANDLING)
 
 
-def test_default_bias_suite_has_named_selection_and_mismatch_stresses() -> None:
+def test_default_bias_suite_has_global_and_gradient_stresses() -> None:
     assert [item.label for item in default_detection_calibration_biases()] == [
         "unbiased",
         "easy_clip_bias",
-        "stratum_mismatch",
-        "easy_clip_plus_mismatch",
+        "south_optimistic_gradient",
+        "south_pessimistic_gradient",
+        "easy_clip_plus_gradient_mismatch",
     ]
 
 
@@ -95,6 +97,28 @@ def test_positive_easy_clip_bias_inflates_detection_estimates() -> None:
 
     assert biased["north"] > original["north"]
     assert biased["south"] > original["south"]
+
+
+def test_gradient_bias_changes_detection_in_opposite_directions_across_islands() -> None:
+    original = {"north": 0.50, "south": 0.50}
+    perturbed = perturb_calibrated_detection_probabilities(
+        original,
+        DetectionCalibrationBias("gradient", archipelago_logit_slope=2.0),
+        Random(20260630),
+        {"north": 0.0, "south": 1.0},
+    )
+
+    assert perturbed["north"] < original["north"]
+    assert perturbed["south"] > original["south"]
+
+
+def test_gradient_bias_requires_complete_site_positions() -> None:
+    with pytest.raises(ValueError, match="site_positions"):
+        perturb_calibrated_detection_probabilities(
+            {"north": 0.5},
+            DetectionCalibrationBias("gradient", archipelago_logit_slope=1.0),
+            Random(20260630),
+        )
 
 
 def test_zero_bias_without_mismatch_preserves_detection_estimates() -> None:
@@ -121,7 +145,12 @@ def test_biased_scoring_is_reproducible_from_fixed_virtual_data() -> None:
         sites=sites(),
         seed=20260630,
     )
-    bias = DetectionCalibrationBias("easy", logit_bias=0.8, site_logit_sd=0.4)
+    bias = DetectionCalibrationBias(
+        "gradient",
+        logit_bias=0.8,
+        archipelago_logit_slope=2.0,
+        site_logit_sd=0.4,
+    )
     first = score_izu_gradient_candidates_with_calibration_bias(
         candidates(), generated, settings(), landscape(), camera_design(), seed_design(),
         calibration_design, bias, seed=20260630,
@@ -137,7 +166,12 @@ def test_biased_scoring_is_reproducible_from_fixed_virtual_data() -> None:
 
 def test_calibration_bias_benchmark_is_reproducible() -> None:
     calibration_design = DetectionCalibrationDesign(50)
-    bias = DetectionCalibrationBias("easy", logit_bias=0.8, site_logit_sd=0.5)
+    bias = DetectionCalibrationBias(
+        "gradient",
+        logit_bias=0.8,
+        archipelago_logit_slope=2.0,
+        site_logit_sd=0.5,
+    )
     first = benchmark_izu_calibration_bias_recovery(
         GuideScenario.VISIT_ATTRACTION,
         candidates(),
