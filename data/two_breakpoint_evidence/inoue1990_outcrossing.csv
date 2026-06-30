@@ -1,0 +1,11 @@
+source_id,source_locator,population_id,island,reported_taxon,outcrossing_t,outcrossing_sd,parenthetic_n,estimation_basis,notes
+inoue1990_psb5_57,Table 1,oshima_1,Oshima,Campanula microdonta,0.624,0.217,7,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,oshima_2,Oshima,Campanula microdonta,0.758,0.197,8,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,toshima,Toshima,Campanula microdonta,0.535,0.318,5,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,niijima_1,Niijima,Campanula microdonta,0.458,0.292,5,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,niijima_2,Niijima,Campanula microdonta,0.566,0.367,6,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,kozu,Kozu,Campanula microdonta,0.366,0.200,3,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,miyake,Miyake,Campanula microdonta,0.157,0.048,3,fixation indices,Direct table transcription
+inoue1990_psb5_57,Table 1,hachijo_1,Hachijo,Campanula microdonta,0.169,,2,fixation indices,No SD reported
+inoue1990_psb5_57,Table 1,hachijo_2,Hachijo,Campanula microdonta,0.236,,2,fixation indices,No SD reported
+inoue1990_psb5_57,Table 1,hachijo_3,Hachijo,Campanula microdonta,0.251,,2,fixation indices,No SD reported
