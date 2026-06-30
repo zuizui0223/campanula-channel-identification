@@ -50,13 +50,15 @@ def test_ardens_replacement_loss_has_two_breakpoint_signature_under_declared_val
 
 def test_small_bee_substitution_removes_the_second_breakpoint_by_construction() -> None:
     parameters = replacement_loss_parameters()
-    ardens, no_bombus = ardens_removal_contrast(
+    _, no_bombus = ardens_removal_contrast(
         TwoBreakpointScenario.SMALL_BEE_SUBSTITUTION,
         parameters,
     )
 
     assert no_bombus.spots_predicted_retained
-    assert no_bombus.expected_outcross_fraction >= ardens.expected_outcross_fraction
+    assert no_bombus.expected_outcross_fraction > 0.7
+    assert no_bombus.selfing_selection_margin is not None
+    assert no_bombus.selfing_selection_margin < 0.0
 
 
 def test_environment_only_does_not_turn_pollinator_regimes_into_measured_service() -> None:
