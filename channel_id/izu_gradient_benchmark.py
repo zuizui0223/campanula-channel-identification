@@ -1,7 +1,7 @@
 """Virtual Izu-gradient benchmark for the full maternal observation pipeline.
 
 This module does **not** claim to contain empirical climate, occurrence, or
-pollinator data for the Izu Islands.  It provides an explicit synthetic
+pollinator data for the Izu Islands. It provides an explicit synthetic
 landscape scaffold: ordered island labels, a declared north-to-south position,
 and user-controlled gradients in floral guide contrast, pollinator service,
 and establishment conditions.
@@ -10,6 +10,11 @@ The purpose is to ask a pre-data design question before field data exist:
 can the combined camera and seed/paternity assays recover a declared guide
 mechanism across a plausible island gradient, and what happens if that
 background gradient is ignored during analysis?
+
+A multi-island recovery requires a candidate mechanism to be compatible with
+all observed sites. Its interval calibration must therefore be study-wide, not
+only per site. This module Bonferroni-calibrates the two camera observations
+and two seed/paternity observations across the declared set of virtual sites.
 """
 
 from __future__ import annotations
@@ -43,7 +48,7 @@ class IzuGradientSite:
     """One ordered position in a synthetic Izu-archipelago scaffold.
 
     ``archipelago_position`` is an ordinal axis from 0 (northern end) to 1
-    (southern end).  It is deliberately not a geographic distance, climate
+    (southern end). It is deliberately not a geographic distance, climate
     variable, or assertion that the focal taxon occurs on this island.
     """
 
@@ -60,7 +65,7 @@ class IzuGradientSite:
 def default_izu_gradient_sites() -> tuple[IzuGradientSite, ...]:
     """Return an ordinal north-to-south island scaffold for sensitivity tests.
 
-    The labels only provide a recognisable archipelago ordering.  Users should
+    The labels only provide a recognisable archipelago ordering. Users should
     subset, relabel, or replace the scaffold with confirmed focal-taxon sites
     before interpreting it as a field sampling frame.
     """
@@ -153,6 +158,38 @@ def _interpolate(north: float, south: float, position: float) -> float:
     return north + (south - north) * position
 
 
+def study_calibrated_observation_designs(
+    camera_design: CameraVisitHandlingDesign,
+    seed_design: SeedSetPaternityDesign,
+    site_count: int,
+    study_familywise_confidence: float = 0.95,
+) -> tuple[CameraVisitHandlingDesign, SeedSetPaternityDesign]:
+    """Allocate one study-wide error budget across all site-level intervals.
+
+    Each site contributes two camera intervals and two seed/paternity intervals.
+    Both design classes already split their own familywise error over two
+    component intervals. Setting each module's familywise confidence to
+
+    ``1 - (1 - study_familywise_confidence) / (2 * site_count)``
+
+    therefore gives every one of the ``4 * site_count`` intervals the same
+    Bonferroni error budget. This avoids treating an eight-island conjunction
+    of nominally local 95% intervals as though it still had 95% coverage.
+    """
+
+    if site_count < 1:
+        raise ValueError("site_count must be positive")
+    if not 0.0 < study_familywise_confidence < 1.0:
+        raise ValueError("study_familywise_confidence must lie in (0, 1)")
+    module_familywise_confidence = 1.0 - (
+        (1.0 - study_familywise_confidence) / (2.0 * site_count)
+    )
+    return (
+        replace(camera_design, familywise_confidence=module_familywise_confidence),
+        replace(seed_design, familywise_confidence=module_familywise_confidence),
+    )
+
+
 def settings_for_izu_gradient_site(
     template: ScenarioSettings,
     site: IzuGradientSite,
@@ -163,7 +200,7 @@ def settings_for_izu_gradient_site(
 
     Under ``FLAT_ENVIRONMENT``, candidates are evaluated at the mean declared
     pollinator service and establishment multiplier while trait contrast still
-    changes across the archipelago.  This intentionally tests an analysis that
+    changes across the archipelago. This intentionally tests an analysis that
     ignores the island background gradient.
     """
 
@@ -215,14 +252,25 @@ def simulate_izu_gradient_dataset(
     seed_design: SeedSetPaternityDesign,
     sites: Sequence[IzuGradientSite] | None = None,
     seed: int = 0,
+    study_familywise_confidence: float = 0.95,
 ) -> IzuGradientDataset:
-    """Generate joint camera and seed/paternity data across a virtual island axis."""
+    """Generate joint camera and seed/paternity data across a virtual island axis.
+
+    Interval confidence is allocated over all declared site-level observation
+    components, so a truth-retention rate can be interpreted at the study level.
+    """
 
     selected_sites = tuple(default_izu_gradient_sites() if sites is None else sites)
     if not selected_sites:
         raise ValueError("at least one gradient site is required")
     if len({site.label for site in selected_sites}) != len(selected_sites):
         raise ValueError("gradient-site labels must be unique")
+    calibrated_camera_design, calibrated_seed_design = study_calibrated_observation_designs(
+        camera_design,
+        seed_design,
+        len(selected_sites),
+        study_familywise_confidence,
+    )
 
     rng = Random(seed)
     observed_sites: list[IzuGradientSiteObservation] = []
@@ -237,14 +285,14 @@ def simulate_izu_gradient_dataset(
             truth,
             truth_settings,
             site.label,
-            camera_design,
+            calibrated_camera_design,
             rng,
         )
         seed_set_paternity = simulate_seed_set_paternity_observation(
             truth,
             truth_settings,
             site.label,
-            seed_design,
+            calibrated_seed_design,
             rng,
         )
         observed_sites.append(
@@ -301,6 +349,7 @@ def benchmark_izu_gradient_recovery(
     analysis_mode: GradientAnalysisMode = GradientAnalysisMode.CALIBRATED,
     replicates: int = 100,
     seed: int = 0,
+    study_familywise_confidence: float = 0.95,
 ) -> IzuGradientRecoverySummary:
     """Estimate multi-island recovery with calibrated or ignored gradients."""
 
@@ -326,6 +375,7 @@ def benchmark_izu_gradient_recovery(
             seed_design,
             selected_sites,
             seed=rng.randrange(2**63),
+            study_familywise_confidence=study_familywise_confidence,
         )
         scenarios = recover_izu_gradient_scenarios(
             candidates,
