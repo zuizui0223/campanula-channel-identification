@@ -56,6 +56,19 @@ from .izu_gradient_benchmark import (
     recover_izu_gradient_scenarios,
     settings_for_izu_gradient_site,
     simulate_izu_gradient_dataset,
+    study_calibrated_observation_designs,
+)
+from .izu_pooled_evidence import (
+    IzuPooledEvidenceRecoverySummary,
+    IzuScenarioEvidence,
+    IzuSiteLogLikelihood,
+    benchmark_izu_pooled_evidence_recovery,
+    binomial_log_probability,
+    multinomial_log_probability,
+    paternity_call_probabilities,
+    poisson_log_probability,
+    score_izu_gradient_candidates,
+    top_scoring_scenarios,
 )
 from .izu_sensitivity_report import (
     IzuObservationPlan,
@@ -135,6 +148,7 @@ __all__ = [
     "SeedFateObservationDesign", "SeedFateCounts", "JointSeedFateRecoverySummary", "seed_fate_probabilities", "sample_seed_fates", "wilson_interval", "joint_seed_fate_observations", "benchmark_joint_seed_fate_recovery",
     "SeedSetPaternityDesign", "PaternityCalls", "SeedSetPaternityObservation", "SeedSetPaternityRecoverySummary", "corrected_outcross_fraction_interval", "simulate_seed_set_paternity_observation", "benchmark_seed_set_paternity_recovery",
     "CameraVisitHandlingDesign", "CameraVisitHandlingCounts", "CameraVisitHandlingObservation", "CameraVisitHandlingRecoverySummary", "poisson_mean_interval", "corrected_legitimate_fraction_interval", "simulate_camera_visit_handling_observation", "benchmark_camera_visit_handling_recovery",
-    "IzuGradientSite", "IzuGradientLandscape", "GradientAnalysisMode", "IzuGradientSiteObservation", "IzuGradientDataset", "IzuGradientRecoverySummary", "default_izu_gradient_sites", "settings_for_izu_gradient_site", "simulate_izu_gradient_dataset", "recover_izu_gradient_scenarios", "benchmark_izu_gradient_recovery",
+    "IzuGradientSite", "IzuGradientLandscape", "GradientAnalysisMode", "IzuGradientSiteObservation", "IzuGradientDataset", "IzuGradientRecoverySummary", "default_izu_gradient_sites", "settings_for_izu_gradient_site", "study_calibrated_observation_designs", "simulate_izu_gradient_dataset", "recover_izu_gradient_scenarios", "benchmark_izu_gradient_recovery",
     "IzuObservationPlan", "IzuVirtualWorld", "IzuRecoveryThresholds", "IzuSensitivityRow", "IzuSensitivityReport", "crossed_izu_observation_plans", "default_izu_virtual_worlds", "run_izu_sensitivity_report", "report_as_markdown_table",
+    "IzuSiteLogLikelihood", "IzuScenarioEvidence", "IzuPooledEvidenceRecoverySummary", "poisson_log_probability", "binomial_log_probability", "multinomial_log_probability", "paternity_call_probabilities", "score_izu_gradient_candidates", "top_scoring_scenarios", "benchmark_izu_pooled_evidence_recovery",
 ]
