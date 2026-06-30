@@ -1,0 +1,33 @@
+name: Virtual Izu Calibration Bias
+
+on:
+  pull_request:
+    paths:
+      - 'channel_id/**'
+      - 'scripts/generate_izu_calibration_bias_report.py'
+      - '.github/workflows/izu-calibration-bias.yml'
+  workflow_dispatch:
+
+jobs:
+  calibration-bias:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[dev]'
+      - name: Generate virtual calibration-bias report
+        run: |
+          python scripts/generate_izu_calibration_bias_report.py \
+            --replicates 25 \
+            --output artifacts/izu_calibration_bias.md
+          cat artifacts/izu_calibration_bias.md
+      - name: Upload calibration bias report
+        uses: actions/upload-artifact@v4
+        with:
+          name: izu-calibration-bias
+          path: artifacts/izu_calibration_bias.md
+          if-no-files-found: error
+          retention-days: 14
