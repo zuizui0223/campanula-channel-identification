@@ -1,0 +1,49 @@
+name: Izu Study Locality Geocoding Candidates
+
+on:
+  pull_request:
+    paths:
+      - "configs/izu_study_locality_geocoding_targets.json"
+      - "scripts/fetch_study_locality_geocoding_candidates.py"
+      - ".github/workflows/izu-study-locality-geocoding.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  geocode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Retrieve candidate study-locality geometries
+        id: geocode
+        continue-on-error: true
+        run: |
+          python scripts/fetch_study_locality_geocoding_candidates.py \
+            --config configs/izu_study_locality_geocoding_targets.json \
+            --output-dir izu_study_locality_geocoding_candidates \
+            --limit 5 \
+            --delay-seconds 1.1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: izu-study-locality-geocoding-candidates
+          path: izu_study_locality_geocoding_candidates
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce complete declared candidate retrieval
+        if: always()
+        run: |
+          if [ "${{ steps.geocode.outcome }}" != "success" ]; then
+            echo "One or more locality searches failed. Inspect the candidate artifact; do not invent a coordinate."
+            exit 1
+          fi
