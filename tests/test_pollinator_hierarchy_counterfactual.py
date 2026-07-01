@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 
 
@@ -6,6 +7,7 @@ SCRIPT_PATH = Path("scripts/score_pollinator_hierarchy_counterfactual.py")
 spec = importlib.util.spec_from_file_location("score_pollinator_hierarchy_counterfactual", SCRIPT_PATH)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 
 load_records = module.load_records
