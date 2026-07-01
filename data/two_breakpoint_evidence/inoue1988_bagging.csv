@@ -1,0 +1,8 @@
+source_id,source_locator,region,island_or_mainland,bagged_flowers,bagged_capsules_set,bagged_capsule_set_percent,bagged_plants,bagged_mean_seeds_per_capsule,bagged_seed_sd,nonbagged_capsules,nonbagged_mean_seeds_per_capsule,nonbagged_seed_sd,notes
+inoue1988_psb3_125,Table 1,Mainland,Chiba,73,4,5.5,46,10.0,42.2,30,369.7,223.2,Direct table transcription; bagged and nonbagged means are plant-level seed/capsule summaries as reported
+inoue1988_psb3_125,Table 1,Izu,Oshima,80,9,11.3,39,8.0,24.5,30,426.7,238.0,Direct table transcription
+inoue1988_psb3_125,Table 1,Izu,Toshima,48,48,100.0,20,649.6,273.8,19,420.5,225.0,Direct table transcription
+inoue1988_psb3_125,Table 1,Izu,Niijima,136,136,100.0,39,588.7,434.6,30,588.7,339.6,Direct table transcription
+inoue1988_psb3_125,Table 1,Izu,Kozushima,46,45,97.8,24,368.6,240.5,30,226.0,224.3,Direct table transcription
+inoue1988_psb3_125,Table 1,Izu,Miyake,139,126,90.6,46,136.7,118.7,30,435.7,276.8,Direct table transcription
+inoue1988_psb3_125,Table 1,Izu,Hachijo,99,96,97.0,37,210.2,133.7,30,401.7,345.7,Direct table transcription
