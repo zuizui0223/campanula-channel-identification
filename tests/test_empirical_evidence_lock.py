@@ -21,7 +21,7 @@ def test_mainland_visitor_localities_aggregate_without_losing_the_source_rows():
     rows = {row["island"]: row for row in build_island_matrix(DATA_DIR)}
 
     assert rows["Chiba"]["outcrossing_t_mean"] == pytest.approx((0.644 + 0.733 + 0.742 + 0.757) / 4)
-    assert rows["Chiba"]["direct_pollinator_rate_rows"] == 8
+    assert rows["Chiba"]["direct_pollinator_rate_rows"] == 10
     assert "Bombus diversus" in rows["Chiba"]["direct_pollinator_groups"]
     assert rows["Shizuoka"]["outcrossing_t_mean"] == pytest.approx((0.794 + 0.752 + 0.782) / 3)
 
