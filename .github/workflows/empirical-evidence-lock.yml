@@ -24,6 +24,8 @@ jobs:
 
       - name: Build direct-observation evidence report
         shell: bash
+        env:
+          PYTHONPATH: .
         run: |
           set -o pipefail
           mkdir -p empirical_evidence_lock
