@@ -1,0 +1,7 @@
+condition_id,claim_scope,status,required_pattern,invalidating_pattern,decision
+cf_size_bridge,pollinator_hierarchy_validity,active,Oshima or other B_ardens regime is intermediate in flower size between mainland large Bombus and non-Bombus islands,B_ardens regime is not intermediate or non-Bombus islands are not smaller,weakens staged hierarchy
+cf_selfing_after_bombus_loss,selfing_syndrome_validity,active,non-Bombus islands have lower outcrossing or higher bagged self seed set than Bombus islands,non-Bombus islands remain as outcrossed as Bombus islands,breaks reproductive-assurance step
+cf_guide_after_hierarchy_loss,guide_loss_validity,blocked,guide or spot metric declines after Bombus loss on island-resolved common scale,guide metric does not decline or increases after Bombus loss,blocks guide-loss mechanism
+cf_environment_residual,interaction_needed_scope,partial,pollinator hierarchy explains residual pattern not matched by climate-only ranking,climate-only ranking matches all observed channels as well as hierarchy,interaction not needed for current channels
+cf_isolation_residual,interaction_needed_scope,partial,pollinator hierarchy explains residual pattern not matched by simple island-order isolation,isolation order matches all observed channels as well as hierarchy,interaction not needed for current channels
+cf_inbreeding_cost,selfing_cost_validity,blocked,selfed progeny or selfing-dominated islands show later survival or fitness cost,no late cost is detected under comparable assay,near-term selfing cost claim blocked
