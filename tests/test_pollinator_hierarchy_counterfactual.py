@@ -1,6 +1,15 @@
+import importlib.util
 from pathlib import Path
 
-from scripts.score_pollinator_hierarchy_counterfactual import load_records, score
+
+SCRIPT_PATH = Path("scripts/score_pollinator_hierarchy_counterfactual.py")
+spec = importlib.util.spec_from_file_location("score_pollinator_hierarchy_counterfactual", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+load_records = module.load_records
+score = module.score
 
 
 def test_loaded_literature_matrix_contains_expected_islands():
