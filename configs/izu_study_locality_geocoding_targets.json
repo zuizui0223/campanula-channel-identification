@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "source_context": "Locality names transcribed from Inoue & Amano (1986) Table 1 and Inoue & Washitani (1989) Table 1. Returned geometries are candidates until human-reviewed.",
+  "targets": [
+    {"target_id": "oshima_senzu", "island_id": "Oshima", "source_locality": "Senzu, Oshima, Tokyo, Japan", "source_id": "inoue1986_psb1_89"},
+    {"target_id": "oshima_park", "island_id": "Oshima", "source_locality": "Oshima Park, Oshima, Tokyo, Japan", "source_id": "inoue1986_psb1_89"},
+    {"target_id": "toshima_maehama", "island_id": "Toshima", "source_locality": "Maehama, Toshima, Tokyo, Japan", "source_id": "inoue_washitani1989_psb4_69"},
+    {"target_id": "niijima_maehama", "island_id": "Niijima", "source_locality": "Maehama, Niijima, Tokyo, Japan", "source_id": "inoue1986_psb1_89"},
+    {"target_id": "niijima_mukoyama", "island_id": "Niijima", "source_locality": "Mukouyama, Niijima, Tokyo, Japan", "source_id": "inoue_washitani1989_psb4_69"},
+    {"target_id": "kozu_nagahama", "island_id": "Kozushima", "source_locality": "Nagahama, Kozushima, Tokyo, Japan", "source_id": "inoue1986_psb1_89"},
+    {"target_id": "miyake_hinoyamatoge", "island_id": "Miyake", "source_locality": "Hinoyama-toge, Miyakejima, Tokyo, Japan", "source_id": "inoue_washitani1989_psb4_69"},
+    {"target_id": "hachijo_sokodo", "island_id": "Hachijo", "source_locality": "Sokodo, Hachijojima, Tokyo, Japan", "source_id": "inoue1986_psb1_89"},
+    {"target_id": "hachijo_oago", "island_id": "Hachijo", "source_locality": "Oago, Hachijojima, Tokyo, Japan", "source_id": "inoue_washitani1989_psb4_69"},
+    {"target_id": "chiba_ichihara", "island_id": "Chiba", "source_locality": "Ichihara, Chiba, Japan", "source_id": "inoue_washitani1989_psb4_69"},
+    {"target_id": "shizuoka_shimoda", "island_id": "Shizuoka", "source_locality": "Shimoda, Shizuoka, Japan", "source_id": "inoue1990_psb5_197"}
+  ]
+}
