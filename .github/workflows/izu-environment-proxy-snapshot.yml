@@ -25,12 +25,23 @@ jobs:
       - name: Fetch climate at declared island proxies
         id: environment
         continue-on-error: true
+        shell: bash
         run: |
-          python scripts/fetch_izu_environment_proxy.py \
-            --config configs/izu_island_proxy_points.json \
-            --output-dir izu_environment_proxy_snapshot \
-            --start-date 1981-01-01 \
-            --end-date 2010-12-31
+          set -uo pipefail
+          for attempt in 1 2 3; do
+            rm -rf izu_environment_proxy_snapshot
+            if python scripts/fetch_izu_environment_proxy.py \
+              --config configs/izu_island_proxy_points.json \
+              --output-dir izu_environment_proxy_snapshot \
+              --start-date 1981-01-01 \
+              --end-date 2010-12-31; then
+              echo "Climate retrieval succeeded on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Climate retrieval attempt ${attempt} failed; retaining its artifact only if all retries fail."
+            sleep $((attempt * 10))
+          done
+          exit 1
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -44,6 +55,6 @@ jobs:
         if: always()
         run: |
           if [ "${{ steps.environment.outcome }}" != "success" ]; then
-            echo "One or more climate requests failed. The retained artifact contains raw responses and failures; do not fill missing covariates manually."
+            echo "One or more climate requests failed after retries. The retained artifact contains raw responses and failures; do not fill missing covariates manually."
             exit 1
           fi
