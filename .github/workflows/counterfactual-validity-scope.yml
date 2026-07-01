@@ -1,0 +1,35 @@
+name: Counterfactual Validity Scope
+
+on:
+  pull_request:
+    paths:
+      - data/counterfactual_validity_conditions.csv
+      - scripts/build_counterfactual_validity_report.py
+      - tests/test_counterfactual_validity_report.py
+      - .github/workflows/counterfactual-validity-scope.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run tests
+        run: |
+          python -m pip install -e .[dev]
+          pytest tests/test_counterfactual_validity_report.py
+      - name: Build report
+        run: |
+          python scripts/build_counterfactual_validity_report.py --output artifacts/counterfactual_validity_scope.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: counterfactual-validity-scope
+          path: artifacts/counterfactual_validity_scope.md
+          if-no-files-found: error
+          retention-days: 30
