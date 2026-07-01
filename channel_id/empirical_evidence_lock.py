@@ -17,8 +17,6 @@ The output is intended to lock down observed patterns before simulation:
 from __future__ import annotations
 
 import csv
-import math
-from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
@@ -56,6 +54,27 @@ def canonical_island(value: str) -> str:
 
     normalized = value.strip()
     return ISLAND_ALIASES.get(normalized, normalized)
+
+
+def _direct_rate_region(row: dict[str, str]) -> str:
+    """Map Table-2 localities to the paper's declared analysis region.
+
+    Locality strings are retained untouched in the source CSV. This mapping is
+    only for the island/mainland summary table, where Shizuoka and Chiba each
+    have multiple observation localities. It never turns a site-level zero rate
+    into a regional absence statement.
+    """
+
+    if row["region"] == "Izu":
+        return canonical_island(row["locality_or_island"])
+    locality = row["locality_or_island"].strip()
+    if locality.startswith("Chiba "):
+        return "Chiba"
+    if locality.startswith("Shizuoka "):
+        return "Shizuoka"
+    if locality.startswith("Tokyo "):
+        return "Tokyo"
+    return canonical_island(locality)
 
 
 def read_csv(path: str | Path) -> list[dict[str, str]]:
@@ -96,10 +115,10 @@ def build_island_matrix(data_dir: str | Path) -> list[dict[str, object]]:
         (dichogamy, "island_or_mainland"),
         (allocation, "island_or_mainland"),
         (flower_size, "island"),
-        (direct_rates, "locality_or_island"),
         (main_pollinators, "island"),
     ):
         islands.update(canonical_island(row[field]) for row in rows)
+    islands.update(_direct_rate_region(row) for row in direct_rates)
 
     results: list[dict[str, object]] = []
     for island in sorted(islands):
@@ -115,7 +134,7 @@ def build_island_matrix(data_dir: str | Path) -> list[dict[str, object]]:
         ]
         allocation_rows = [row for row in allocation if canonical_island(row["island_or_mainland"]) == island]
         flower_rows = [row for row in flower_size if canonical_island(row["island"]) == island]
-        rate_rows = [row for row in direct_rates if canonical_island(row["locality_or_island"]) == island]
+        rate_rows = [row for row in direct_rates if _direct_rate_region(row) == island]
         main_rows = [row for row in main_pollinators if canonical_island(row["island"]) == island]
 
         results.append(
@@ -178,7 +197,6 @@ def _format_float(value: object, digits: int = 3) -> str:
 def render_empirical_evidence_markdown(data_dir: str | Path) -> str:
     matrix = build_island_matrix(data_dir)
     coverage = coverage_audit(data_dir)
-    coverage_by_island = {item.island: item for item in coverage}
     lines = [
         "# Empirical evidence lock: Izu Campanula",
         "",
