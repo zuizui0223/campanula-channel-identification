@@ -1,0 +1,122 @@
+name: GBIF Candidate Snapshot
+
+on:
+  pull_request:
+    paths:
+      - "scripts/fetch_gbif_occurrences.py"
+      - ".github/workflows/gbif-candidate-snapshot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch bounded raw snapshots
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p gbif_candidate_snapshots
+          printf 'target\trequested_taxon\tstatus\n' > gbif_candidate_snapshots/STATUS.tsv
+          while IFS='|' read -r target scientific_name; do
+            target_dir="gbif_candidate_snapshots/$target"
+            mkdir -p "$target_dir"
+            if python scripts/fetch_gbif_occurrences.py \
+              --scientific-name "$scientific_name" \
+              --target-id "$target" \
+              --country JP \
+              --max-records 300 \
+              --page-size 300 \
+              --output-dir "$target_dir" >"$target_dir/fetch.log" 2>&1; then
+              printf '%s\t%s\tsuccess\n' "$target" "$scientific_name" >> gbif_candidate_snapshots/STATUS.tsv
+            else
+              printf '%s\t%s\tfailure\n' "$target" "$scientific_name" >> gbif_candidate_snapshots/STATUS.tsv
+            fi
+          done <<'TARGETS'
+          campanula_microdonta|Campanula microdonta
+          campanula_punctata|Campanula punctata
+          bombus_ardens|Bombus ardens
+          bombus_diversus|Bombus diversus
+          lasioglossum|Lasioglossum
+          megachile|Megachile
+          ceratina|Ceratina Latreille, 1802
+          TARGETS
+
+      - name: Write retrieval inventory
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          import csv
+          import json
+          from pathlib import Path
+
+          root = Path("gbif_candidate_snapshots")
+          statuses = {}
+          with (root / "STATUS.tsv").open(encoding="utf-8", newline="") as handle:
+              for row in csv.DictReader(handle, delimiter="\t"):
+                  statuses[row["target"]] = row
+          lines = [
+              "# GBIF candidate snapshot inventory",
+              "",
+              "These are raw, bounded API snapshots. They are candidate availability evidence only; review is required before any island assignment or scenario use.",
+              "",
+              "| target | requested taxon | retrieval status | matched usageKey | match type | candidate records |",
+              "|---|---|---|---:|---|---:|",
+          ]
+          for target, status in sorted(statuses.items()):
+              child = root / target
+              manifest_path = child / "manifest.json"
+              if not manifest_path.exists():
+                  lines.append(f"| {target} | {status['requested_taxon']} | {status['status']} |  |  |  |")
+                  continue
+              manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+              with (child / "occurrences_candidate.csv").open(encoding="utf-8", newline="") as handle:
+                  count = sum(1 for _ in csv.DictReader(handle))
+              matched = manifest["matched_taxon"]
+              lines.append(
+                  "| {target} | {requested} | {status} | {usage_key} | {match_type} | {count} |".format(
+                      target=manifest["target_id"],
+                      requested=manifest["scientific_name_requested"],
+                      status=status["status"],
+                      usage_key=matched.get("usageKey", ""),
+                      match_type=matched.get("matchType", ""),
+                      count=count,
+                  )
+              )
+          lines.extend((
+              "",
+              "## Failure logs",
+              "",
+              "For a target marked `failure`, inspect `<target>/fetch.log`. A failed request is not a biological absence result.",
+          ))
+          (root / "INVENTORY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gbif-candidate-snapshots
+          path: gbif_candidate_snapshots
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail if any declared taxon remains unresolved
+        if: always()
+        shell: bash
+        run: |
+          if awk -F '\t' 'NR > 1 && $3 != "success" { found = 1 } END { exit(found ? 0 : 1) }' gbif_candidate_snapshots/STATUS.tsv; then
+            echo "One or more declared GBIF queries failed. The artifact retains logs and any successful snapshots."
+            exit 1
+          fi
+          echo "All declared GBIF queries completed."
