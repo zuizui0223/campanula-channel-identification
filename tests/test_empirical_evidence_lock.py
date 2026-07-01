@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from channel_id.empirical_evidence_lock import build_island_matrix, coverage_audit, render_empirical_evidence_markdown
 
 
@@ -9,7 +11,7 @@ DATA_DIR = Path(__file__).parents[1] / "data" / "two_breakpoint_evidence"
 def test_matrix_keeps_oshima_mixed_mating_and_bagging_as_distinct_channels():
     rows = {row["island"]: row for row in build_island_matrix(DATA_DIR)}
 
-    assert rows["Oshima"]["outcrossing_t_mean"] == 0.691
+    assert rows["Oshima"]["outcrossing_t_mean"] == pytest.approx(0.691)
     assert rows["Oshima"]["bagged_capsule_set_percent"] == 11.3
     assert rows["Oshima"]["direct_pollinator_groups"] == "Bombus ardens;Ceratina spp.;Lasioglossum spp."
     assert rows["Oshima"]["main_pollinator_groups"] == "Bombus_ardens;Lasioglossum"
