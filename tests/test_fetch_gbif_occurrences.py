@@ -18,11 +18,13 @@ def test_gbif_urls_keep_the_declared_taxon_and_coordinate_filter():
 
     match = module.species_match_url("Bombus ardens")
     genus_search = module.species_search_url("Ceratina", "GENUS")
+    key_lookup = module.species_key_url(1341198)
     search = module.occurrence_search_url(1234, "JP", 300, 600)
 
     assert "Bombus+ardens" in match
     assert "Ceratina" in genus_search
     assert "rank=GENUS" in genus_search
+    assert key_lookup.endswith("/1341198")
     assert "taxon_key=1234" in search
     assert "has_coordinate=true" in search
     assert "country=JP" in search
@@ -99,6 +101,44 @@ def test_ambiguous_genus_fallback_stops_instead_of_selecting(monkeypatch):
 
     with pytest.raises(ValueError, match="remains ambiguous"):
         module.resolve_taxon("Ceratina")
+
+
+def test_declared_taxon_key_preserves_ambiguous_match_and_selected_record(monkeypatch):
+    module = load_script_module()
+    match_url = module.species_match_url("Ceratina")
+    selected_url = module.species_key_url(1341198)
+    responses = {
+        match_url: {"matchType": "NONE", "note": "Multiple equal matches"},
+        selected_url: {
+            "key": 1341198,
+            "canonicalName": "Ceratina",
+            "scientificName": "Ceratina Latreille, 1802",
+            "rank": "GENUS",
+            "taxonomicStatus": "ACCEPTED",
+        },
+    }
+    monkeypatch.setattr(module, "fetch_json", lambda url: responses[url])
+
+    resolved, resolution, taxon_key, urls = module.resolve_taxon(
+        "Ceratina",
+        declared_taxon_key=1341198,
+        declared_taxon_key_rationale="Explicit reviewed GBIF key for the target genus.",
+    )
+
+    assert taxon_key == 1341198
+    assert resolved["matchType"] == "DECLARED_REVIEWED_TAXON_KEY"
+    assert resolution["method"] == "declared_reviewed_taxon_key"
+    assert resolution["original_species_match"]["matchType"] == "NONE"
+    assert resolution["selected_taxon"]["scientificName"] == "Ceratina Latreille, 1802"
+    assert urls == [match_url, selected_url]
+
+
+def test_declared_taxon_key_requires_a_rationale(monkeypatch):
+    module = load_script_module()
+    monkeypatch.setattr(module, "fetch_json", lambda url: {})
+
+    with pytest.raises(ValueError, match="rationale"):
+        module.resolve_taxon("Ceratina", declared_taxon_key=1341198)
 
 
 def test_normalization_retains_candidate_review_status_and_no_effectiveness_claim():
