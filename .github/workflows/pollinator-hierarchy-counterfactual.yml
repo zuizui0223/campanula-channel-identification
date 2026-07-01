@@ -1,0 +1,42 @@
+name: Pollinator Hierarchy Counterfactual
+
+on:
+  pull_request:
+    paths:
+      - "data/inoue_literature_island_traits.csv"
+      - "scripts/score_pollinator_hierarchy_counterfactual.py"
+      - "tests/test_pollinator_hierarchy_counterfactual.py"
+      - ".github/workflows/pollinator-hierarchy-counterfactual.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: |
+          python -m pip install -e .[dev]
+          pytest tests/test_pollinator_hierarchy_counterfactual.py
+
+      - name: Score counterfactual models
+        run: |
+          python scripts/score_pollinator_hierarchy_counterfactual.py \
+            --input data/inoue_literature_island_traits.csv \
+            --output-json artifacts/pollinator_hierarchy_counterfactual.json \
+            --output-md artifacts/pollinator_hierarchy_counterfactual.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pollinator-hierarchy-counterfactual
+          path: artifacts/pollinator_hierarchy_counterfactual.*
+          if-no-files-found: error
+          retention-days: 30
