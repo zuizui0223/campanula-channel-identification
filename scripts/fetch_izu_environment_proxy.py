@@ -7,6 +7,10 @@ layer, while preserving the fact that proxy resolution can affect conclusions.
 
 The script saves raw API replies as well as derived summaries. It never uses an
 occurrence point, a public photograph, or a pollinator record as a climate point.
+
+Network retries occur per island query. A transient failure for one point never
+throws away successful replies for the other declared points, and retries never
+substitute or interpolate a missing climate value.
 """
 
 from __future__ import annotations
@@ -15,11 +19,13 @@ import argparse
 import csv
 import json
 import math
+import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, pstdev
 from typing import Any
+from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -37,6 +43,7 @@ SUMMARY_COLUMNS = (
     "precipitation_seasonality_cv",
     "days_with_temperature",
     "days_with_precipitation",
+    "attempts_used",
     "source_url",
     "proxy_boundary",
 )
@@ -69,6 +76,29 @@ def fetch_json(url: str) -> dict[str, Any]:
     return payload
 
 
+def fetch_json_with_retry(url: str, max_attempts: int, retry_delay_seconds: float) -> tuple[dict[str, Any], int]:
+    """Fetch one declared query with exponential backoff for transient transport errors."""
+
+    if max_attempts <= 0:
+        raise ValueError("max_attempts must be positive")
+    if retry_delay_seconds < 0.0:
+        raise ValueError("retry_delay_seconds cannot be negative")
+    last_error: OSError | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fetch_json(url), attempt
+        except HTTPError as error:
+            if error.code < 500 and error.code != 429:
+                raise
+            last_error = error
+        except OSError as error:
+            last_error = error
+        if attempt < max_attempts:
+            time.sleep(retry_delay_seconds * (2 ** (attempt - 1)))
+    assert last_error is not None
+    raise last_error
+
+
 def _as_float_series(value: object, label: str) -> list[float | None]:
     if not isinstance(value, list):
         raise ValueError(f"Climate response lacks list-valued {label}")
@@ -89,7 +119,14 @@ def _as_date_series(value: object) -> list[str]:
     return list(value)
 
 
-def summarize_climate(payload: dict[str, Any], point: dict[str, Any], start_date: str, end_date: str, source_url: str) -> dict[str, str]:
+def summarize_climate(
+    payload: dict[str, Any],
+    point: dict[str, Any],
+    start_date: str,
+    end_date: str,
+    source_url: str,
+    attempts_used: int,
+) -> dict[str, str]:
     daily = payload.get("daily")
     if not isinstance(daily, dict):
         raise ValueError("Climate response lacks daily object")
@@ -129,6 +166,7 @@ def summarize_climate(payload: dict[str, Any], point: dict[str, Any], start_date
         "precipitation_seasonality_cv": f"{precip_cv:.6f}",
         "days_with_temperature": str(len(usable_temperature)),
         "days_with_precipitation": str(len(usable_precipitation)),
+        "attempts_used": str(attempts_used),
         "source_url": source_url,
         "proxy_boundary": "Island proxy point only; not a study locality or island-wide mean.",
     }
@@ -165,7 +203,17 @@ def distance_rows(points: list[dict[str, Any]]) -> list[dict[str, str]]:
     return rows
 
 
-def run(config_path: Path, output_dir: Path, start_date: str, end_date: str) -> int:
+def run(
+    config_path: Path,
+    output_dir: Path,
+    start_date: str,
+    end_date: str,
+    max_attempts: int,
+    retry_delay_seconds: float,
+    inter_request_delay_seconds: float,
+) -> int:
+    if inter_request_delay_seconds < 0.0:
+        raise ValueError("inter_request_delay_seconds cannot be negative")
     config = json.loads(config_path.read_text(encoding="utf-8"))
     points = config.get("points")
     if not isinstance(points, list) or not points:
@@ -177,7 +225,7 @@ def run(config_path: Path, output_dir: Path, start_date: str, end_date: str) -> 
     raw: list[dict[str, Any]] = []
     summaries: list[dict[str, str]] = []
     failures: list[dict[str, str]] = []
-    for point in points:
+    for index, point in enumerate(points):
         if not isinstance(point, dict):
             failures.append({"island_id": "unknown", "error": "proxy point is not an object"})
             continue
@@ -188,17 +236,22 @@ def run(config_path: Path, output_dir: Path, start_date: str, end_date: str) -> 
             if not -90.0 <= latitude <= 90.0 or not -180.0 <= longitude <= 180.0:
                 raise ValueError("proxy coordinate is outside valid bounds")
             url = climate_url(latitude, longitude, start_date, end_date)
-            payload = fetch_json(url)
-            raw.append({"point": point, "query_url": url, "response": payload})
-            summaries.append(summarize_climate(payload, point, start_date, end_date, url))
+            payload, attempts_used = fetch_json_with_retry(url, max_attempts, retry_delay_seconds)
+            raw.append({"point": point, "query_url": url, "attempts_used": attempts_used, "response": payload})
+            summaries.append(summarize_climate(payload, point, start_date, end_date, url, attempts_used))
         except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
-            failures.append({"island_id": island_id, "error": str(error)})
+            failures.append({"island_id": island_id, "error": str(error), "max_attempts": str(max_attempts)})
+        if index < len(points) - 1 and inter_request_delay_seconds:
+            time.sleep(inter_request_delay_seconds)
     manifest = {
         "source": "Open-Meteo archive API",
         "fetched_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "proxy_config": config,
         "climate_period_start": start_date,
         "climate_period_end": end_date,
+        "max_attempts_per_island": max_attempts,
+        "retry_delay_seconds": retry_delay_seconds,
+        "inter_request_delay_seconds": inter_request_delay_seconds,
         "boundary": "Climate values come from declared island proxy points. They are suitable only as a reproducible environmental competing explanation and must be checked against alternative point/polygon extractions.",
     }
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -221,13 +274,24 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--start-date", default="1981-01-01")
     parser.add_argument("--end-date", default="2010-12-31")
+    parser.add_argument("--max-attempts", type=int, default=5)
+    parser.add_argument("--retry-delay-seconds", type=float, default=5.0)
+    parser.add_argument("--inter-request-delay-seconds", type=float, default=1.0)
     args = parser.parse_args()
     try:
-        status = run(args.config, args.output_dir, args.start_date, args.end_date)
+        status = run(
+            args.config,
+            args.output_dir,
+            args.start_date,
+            args.end_date,
+            args.max_attempts,
+            args.retry_delay_seconds,
+            args.inter_request_delay_seconds,
+        )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         raise SystemExit(str(error)) from error
     if status:
-        raise SystemExit("One or more island proxy climate requests failed; inspect the retained artifact.")
+        raise SystemExit("One or more island proxy climate requests failed after per-island retries; inspect the retained artifact.")
 
 
 if __name__ == "__main__":
