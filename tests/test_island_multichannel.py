@@ -8,6 +8,7 @@ from channel_id.island_multichannel import (
     IslandEvidence,
     IslandScenario,
     ObservationScale,
+    _reported_proportion_logit,
     _score_draw,
     _standardize_environment,
     compare_scenarios,
@@ -41,6 +42,12 @@ def test_loads_source_locked_island_table_without_filling_missing_environment() 
 
 def test_empty_guide_constraint_file_is_a_valid_absent_channel() -> None:
     assert load_guide_order_constraints(GUIDE) == ()
+
+
+def test_reported_bagging_endpoints_are_finite_and_not_literal_probabilities() -> None:
+    assert _reported_proportion_logit(0.0) > -10.0
+    assert _reported_proportion_logit(1.0) < 10.0
+    assert _reported_proportion_logit(1.0) > _reported_proportion_logit(0.0)
 
 
 def test_same_seed_gives_same_scenario_ranking() -> None:
