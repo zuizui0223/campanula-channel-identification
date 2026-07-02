@@ -112,7 +112,7 @@ class ObservationScale:
     """Declared observational uncertainty on each measurement scale."""
 
     outcrossing_logit_sd: float = 0.85
-    bagging_logit_sd: float = 1.10
+    bagging_logit_sd: float = 1.75
     flower_sd_mm: float = 7.5
     guide_latent_sd: float = 1.0
 
@@ -220,6 +220,16 @@ def _clamp_probability(value: float) -> float:
 def _logit(value: float) -> float:
     value = _clamp_probability(value)
     return math.log(value / (1.0 - value))
+
+
+def _reported_proportion_logit(value: float) -> float:
+    """Continuity-correct a paper-level percentage before logit scoring.
+
+    Exact 0 or 100 percent in a historical table does not identify a literal
+    population probability of 0 or 1. A 0.5/100 correction keeps endpoint
+    summaries finite until a denominator-specific likelihood is available.
+    """
+    return _logit((100.0 * value + 0.5) / 101.0)
 
 
 def _expit(value: float) -> float:
@@ -395,8 +405,6 @@ def draw_scenario_parameters(
     if scenario is IslandScenario.SMALL_BEE_SUBSTITUTION:
         small = max(small, ardens)
     elif scenario is IslandScenario.ARDENS_BRIDGE_LOSS:
-        # The bridge hypothesis is only tested in the regime where ardens
-        # is more effective than the small-bee composite.
         ardens = max(ardens, small + 0.05)
         ardens = min(0.98, ardens)
 
@@ -450,7 +458,7 @@ def _score_draw(
             )
         if EvidenceChannel.BAGGING in included_channels and row.bagged_capsule_fraction is not None:
             by_channel[EvidenceChannel.BAGGING] += _normal_logpdf(
-                _logit(row.bagged_capsule_fraction),
+                _reported_proportion_logit(row.bagged_capsule_fraction),
                 _logit(prediction.expected_bagging),
                 scale.bagging_logit_sd,
             )
@@ -494,7 +502,7 @@ def compare_scenarios(
 ) -> tuple[ScenarioSummary, ...]:
     """Integrate restricted scenarios over declared priors.
 
-    The output ranks *compatibility under this model and its priors*.  It is not
+    The output ranks *compatibility under this model and its priors*. It is not
     a reconstruction of history and should be accompanied by channel-ablation
     and prior-sensitivity analyses.
     """
@@ -533,7 +541,7 @@ def compare_scenarios(
         weights = [math.exp(value - normalizer) for value in log_likelihoods]
         prediction_by_island: dict[str, list[float]] = {}
         for row_index, row in enumerate(rows):
-            # [service (nullable->0), assurance, outcrossing, bagging, flower, guide]
+            # [service (nullable -> 0), assurance, outcrossing, bagging, flower, guide]
             prediction_by_island[row.island_id] = [0.0] * 6
             for weight, result in zip(weights, draw_results):
                 prediction = result.predictions[row_index]
@@ -573,7 +581,7 @@ def compare_scenarios(
                 mean_bagging_log_likelihood=channel_mean(EvidenceChannel.BAGGING),
                 mean_flower_log_likelihood=channel_mean(EvidenceChannel.FLOWER),
                 mean_guide_log_likelihood=channel_mean(EvidenceChannel.GUIDE_ORDER),
-                # This is an importance-sampling diagnostic, not a scenario probability.
+                # Importance-sampling diagnostic, not a scenario probability.
                 posterior_best_draw_fraction=max(weights),
                 expected_predictions=expected_predictions,
                 included_channels=tuple(channel for channel in EvidenceChannel if channel in selected),
